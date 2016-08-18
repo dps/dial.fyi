@@ -8,48 +8,29 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault"
-        android:name=".ACApplication">
-        <uses-library
-            android:name="com.google.android.wearable"
-            android:required="false" />
+    <application android:name=".ACApplication" android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher" android:label="@string/app_name"
+        android:supportsRtl="true" android:theme="@android:style/Theme.DeviceDefault">
+        <uses-library android:name="com.google.android.wearable" android:required="false" />
 
-        <service
-            android:name=".ComplicationService"
-            android:label="@string/app_name">
-            <meta-data
-                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+        <service android:name=".ComplicationService" android:label="@string/app_name">
+            <meta-data android:name="android.support.wearable.complications.SUPPORTED_TYPES"
                 android:value="LARGE_IMAGE" />
-            <meta-data
-                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+            <meta-data android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="3600" />
-            <meta-data
-                android:name="android.support.wearable.complications.PROVIDER_CONFIG_ACTION"
+            <meta-data android:name="android.support.wearable.complications.PROVIDER_CONFIG_ACTION"
                 android:value="io.singleton.artcomplications.ACTION_CONFIG" />
 
             <intent-filter>
                 <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST" />
             </intent-filter>
         </service>
-        <service
-            android:name=".ACJobService"
-            android:enabled="true"
-            android:exported="true"
+        <service android:name=".ACJobService" android:enabled="true" android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <uses-library
-            android:name="com.google.android.wearable"
-            android:required="false" />
+        <uses-library android:name="com.google.android.wearable" android:required="false" />
 
-
-        <activity
-            android:name=".ConfigActivity"
-            android:exported="true"
+        <activity android:name=".ConfigActivity" android:exported="true"
             android:label="@string/title_activity_config"
             android:theme="@android:style/Theme.DeviceDefault.Light">
             <intent-filter>

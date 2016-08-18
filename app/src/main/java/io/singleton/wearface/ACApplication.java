@@ -4,6 +4,7 @@ import android.app.Application;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -17,6 +18,10 @@ import org.json.JSONObject;
 
 public class ACApplication extends Application {
 
+    public static final int INITIAL_TIMEOUT_MS = 120000;
+    public static final int MAX_NUM_RETRIES = 1;
+    public static final float BACKOFF_MULTIPLIER = 1f;
+    public static final int REGISTER_INITIAL_TIMEOUT_MS = 60000;
     private static ACApplication sInstance;
     private RequestQueue mRequestQueue;
     private ImageDownloadingStore mImageStore;
@@ -82,6 +87,7 @@ public class ACApplication extends Application {
                 },
                 mErrorListener
         );
+        request.setRetryPolicy(new DefaultRetryPolicy(REGISTER_INITIAL_TIMEOUT_MS, MAX_NUM_RETRIES, BACKOFF_MULTIPLIER));
         ACApplication.getInstance().getRequestQueue().add(request);
 
     }
@@ -124,6 +130,7 @@ public class ACApplication extends Application {
                 },
                 mErrorListener
         );
+        request.setRetryPolicy(new DefaultRetryPolicy(INITIAL_TIMEOUT_MS, MAX_NUM_RETRIES, BACKOFF_MULTIPLIER));
         ACApplication.getInstance().getRequestQueue().add(request);
     }
 

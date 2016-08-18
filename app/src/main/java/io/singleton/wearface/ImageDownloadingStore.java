@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -37,6 +38,9 @@ public class ImageDownloadingStore {
     public static final String GOOGLE_PHOTOS_URL_HOST = "lh3.googleusercontent.com";
     public static final String EXTRA_FILENAME_HASH = "hash";
     public static final String EXTRA_NUM_NEW_IMAGES = "new";
+    public static final int INITIAL_TIMEOUT_MS = 120000;
+    public static final int MAX_NUM_RETRIES = 2;
+    public static final float BACKOFF_MULTIPLIER = 1f;
     private final File mCacheDir;
     private Context mContext;
     private MessageDigest mDigester;
@@ -139,6 +143,7 @@ public class ImageDownloadingStore {
                     }
                 });
 
+        request.setRetryPolicy(new DefaultRetryPolicy(INITIAL_TIMEOUT_MS, MAX_NUM_RETRIES, BACKOFF_MULTIPLIER));
         Log.d(TAG, "Requesting " + url + " -> " + filename);
         ACApplication.getInstance().getRequestQueue().add(request);
     }
