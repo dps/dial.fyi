@@ -1,0 +1,4 @@
+test:
+  override:
+    - ./gradlew assembleRelease
+    - cp -r wearface/build/outputs $CIRCLE_ARTIFACTS
