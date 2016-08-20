@@ -8,8 +8,15 @@ import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -42,21 +49,132 @@ public class ImageDownloadingStore {
     public static final int MAX_NUM_RETRIES = 2;
     public static final float BACKOFF_MULTIPLIER = 1f;
     public static final String FILE_PREFIX = "ac-";
+    public static final int REGISTER_INITIAL_TIMEOUT_MS = 60000;
+
     private final File mCacheDir;
     private Context mContext;
     private MessageDigest mDigester;
     private Map<String, String> mUrlHashes = new HashMap<String, String>();
 
+
+    private static ImageDownloadingStore sInstance;
+
+    public static synchronized ImageDownloadingStore getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new ImageDownloadingStore(context);
+        }
+        return sInstance;
+    }
+
+    private RequestQueue mRequestQueue;
+
+    private Settings mSettings;
+
     public ImageDownloadingStore(Context context) {
         mContext = context;
         mCacheDir = mContext.getCacheDir();
+        mRequestQueue = Volley.newRequestQueue(context);
+        mSettings = Settings.getInstance(context);
+    }
+
+    private Response.ErrorListener mErrorListener = new Response.ErrorListener(){
+        @Override
+        public void onErrorResponse(VolleyError error) {
+            Log.d(TAG, "onErrorResponse " + error);
+        }
+    };
+
+    private RetryPolicy mRetryPolicy =
+            new DefaultRetryPolicy(REGISTER_INITIAL_TIMEOUT_MS,
+                                   MAX_NUM_RETRIES, BACKOFF_MULTIPLIER);
+
+
+    public void register() {
+
+        String when = Long.toString(System.currentTimeMillis());
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("id", mSettings.getLocalId());
+            json.put("when", when);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.POST,
+                Constants.getRegisterUrl(),
+                json,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        String token = null;
+                        try {
+                            token = response.getString("token");
+                            mSettings.setConfigToken(token);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            // TODO: maybe retry
+                        }
+
+                    }
+                },
+                mErrorListener
+        );
+        request.setRetryPolicy(mRetryPolicy);
+        mRequestQueue.add(request);
+    }
+
+    public void updateUrls() {
+
+        String when = Long.toString(System.currentTimeMillis());
+
+        JSONObject body = new JSONObject();
+        try {
+            body.put("id", mSettings.getLocalId());
+            body.put("token", mSettings.getConfigToken());
+            body.put("when", when);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject json = body;
+
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.POST,
+                Constants.getImageListUrl(mSettings.getConfigToken()),
+                json,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        Log.d(TAG, response.toString());
+                        String urls = null;
+                        try {
+                            urls = response.getString("urls");
+                            mSettings.setImageUrlList(urls);
+                            onUrlsUpdated(urls.split(","));
+                        } catch (JSONException e) {
+                            Log.e(TAG, "Could not parse response ", e);
+                            // TODO: maybe retry
+                        }
+
+                    }
+                },
+                mErrorListener
+        );
+        request.setRetryPolicy(mRetryPolicy);
+        mRequestQueue.add(request);
+    }
+
+    public Bitmap getNextBitmap() {
+        return getBitmapIfCached(mSettings.getNextUrl());
     }
 
     public void onUrlsUpdated(String[] urls) {
         mUrlHashes.clear();
         for (String url : urls) {
             mUrlHashes.put(urlHash(url), url);
-            Log.d(TAG, "oUU " + url);
         }
 
         deleteOldFiles();
@@ -141,8 +259,8 @@ public class ImageDownloadingStore {
                     }
                 });
 
-        request.setRetryPolicy(new DefaultRetryPolicy(INITIAL_TIMEOUT_MS, MAX_NUM_RETRIES, BACKOFF_MULTIPLIER));
-        ACApplication.getInstance().getRequestQueue().add(request);
+        request.setRetryPolicy(mRetryPolicy);
+        mRequestQueue.add(request);
     }
 
     private void broadcastFileDownloaded(String filename) {
@@ -166,6 +284,9 @@ public class ImageDownloadingStore {
     }
 
     Bitmap getBitmapIfCached(String url) {
+        if (url == null) {
+            return null;
+        }
         String name = urlHash(url);
         File inf = new File(mCacheDir, name);
         try {
@@ -179,7 +300,7 @@ public class ImageDownloadingStore {
         }
     }
 
-    private Bitmap parseBitmapFromBytes(byte[] data) {
+    private static Bitmap parseBitmapFromBytes(byte[] data) {
         BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
         Bitmap bitmap = null;
         decodeOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;

@@ -13,7 +13,8 @@ public class ByteArrayRequest extends Request<byte[]> {
         void onResponse(byte[] data);
     }
 
-    public ByteArrayRequest(int method, String url, Listener listener, Response.ErrorListener errorListener) {
+    public ByteArrayRequest(int method, String url, Listener listener,
+                            Response.ErrorListener errorListener) {
         super(method, url, errorListener);
         mListener = listener;
     }

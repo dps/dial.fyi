@@ -35,7 +35,7 @@ public class ACJobService extends JobService {
     }
 
     private boolean onUpdateJobStart(JobParameters params) {
-        ACApplication.getInstance().updateUrls();
+        ImageDownloadingStore.getInstance(this).updateUrls();
         return true;
     }
 

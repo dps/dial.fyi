@@ -118,9 +118,13 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
     }
 
     public String getNextUrl() {
-        mIndexInCollection = (mIndexInCollection + 1) % mImageUrlList.split(",").length;
-        writeToSharedPreferences();
-        return mImageUrlList.split(",")[mIndexInCollection];
+        if (mImageUrlList != null) {
+            mIndexInCollection = (mIndexInCollection + 1) % mImageUrlList.split(",").length;
+            writeToSharedPreferences();
+            return mImageUrlList.split(",")[mIndexInCollection];
+        } else {
+            return null;
+        }
     }
 
 }

@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
 import android.support.wearable.view.ProgressSpinner;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -80,7 +79,7 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
                 intf.addAction(ImageDownloadingStore.ACTION_UPDATE_COMPLETE);
                 registerReceiver(mReceiver, intf);
 
-                ((ACApplication)getApplication()).updateUrls();
+                ImageDownloadingStore.getInstance(getApplicationContext()).updateUrls();
                 mProgressView.setVisibility(View.VISIBLE);
                 mProgressView.showWithAnimation();
                 findViewById(R.id.buttonProceed).setVisibility(View.GONE);
@@ -122,7 +121,7 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
     private void updateUi() {
         if (mSettings.getConfigToken() == null) {
             mTextView.setText(getString(R.string.registering));
-            ACApplication.getInstance().register();
+            ImageDownloadingStore.getInstance(this).register();
         } else {
             String confUrl = Constants.USER_FRIENDLY_BASE_URL +
                     String.format(Constants.USER_CONFIG_PATH, mSettings.getConfigToken());
@@ -147,7 +146,7 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
     public void onExitAmbient() {
         updateDisplay();
         super.onExitAmbient();
-        ((ACApplication)getApplication()).updateUrls();
+        ImageDownloadingStore.getInstance(this).updateUrls();
     }
 
     private void updateDisplay() {
