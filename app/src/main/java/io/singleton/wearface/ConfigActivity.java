@@ -37,7 +37,6 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive (" + mDownloadsRemaining + ") " + intent.toString());
 
             if (intent.getAction().equals(ImageDownloadingStore.ACTION_UPDATE_START)) {
                 mDownloadsRemaining = 0;
@@ -50,7 +49,6 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
                 }
 
                 if (mDownloadsRemaining == 0) {
-                    Log.d(TAG, "mDownloadsRemaining == 0 -> finishing");
                     if (mReceiver != null) {
                         unregisterReceiver(mReceiver);
                         mReceiver = null;

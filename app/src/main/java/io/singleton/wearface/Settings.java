@@ -107,7 +107,6 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
-        Log.d(TAG, "onSharedPreferenceChanged " + key);
         updateFromSharedPrefs();
         notifyListeners();
     }

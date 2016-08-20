@@ -11,6 +11,7 @@ import io.singleton.wearface.R;
 
 public class ComplicationService extends ComplicationProviderService {
 
+    @Override
     public void onComplicationUpdate (int complicationId, int type,
                                       ComplicationManager manager) {
 

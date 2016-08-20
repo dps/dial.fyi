@@ -41,6 +41,7 @@ public class ImageDownloadingStore {
     public static final int INITIAL_TIMEOUT_MS = 120000;
     public static final int MAX_NUM_RETRIES = 2;
     public static final float BACKOFF_MULTIPLIER = 1f;
+    public static final String FILE_PREFIX = "ac-";
     private final File mCacheDir;
     private Context mContext;
     private MessageDigest mDigester;
@@ -52,7 +53,6 @@ public class ImageDownloadingStore {
     }
 
     public void onUrlsUpdated(String[] urls) {
-        Log.d(TAG, "onUrlsUpdated (" + urls.length + ")");
         mUrlHashes.clear();
         for (String url : urls) {
             mUrlHashes.put(urlHash(url), url);
@@ -70,10 +70,9 @@ public class ImageDownloadingStore {
             }
             mDigester.reset();
             mDigester.update(url.getBytes());
-            return "ac-" + (new BigInteger(1, mDigester.digest())).toString(16);
+            return FILE_PREFIX + (new BigInteger(1, mDigester.digest())).toString(16);
         } catch (NoSuchAlgorithmException e) {
-            Log.d(TAG, e.toString());
-            e.printStackTrace();
+            Log.e(TAG, "Digest algorithm not found", e);
         }
         return null;
     }
@@ -82,7 +81,7 @@ public class ImageDownloadingStore {
         for (File f : mCacheDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                return (filename.startsWith("ac-"));
+                return (filename.startsWith(FILE_PREFIX));
             }
         })) {
             if (!mUrlHashes.containsKey(f.getName())) {
@@ -116,7 +115,6 @@ public class ImageDownloadingStore {
     }
 
     private void downloadUrlToFile(String url, final String filename) {
-        Log.d(TAG, "downloadUrlToFile " + url + " -> " + filename);
         ByteArrayRequest request = new ByteArrayRequest(Request.Method.GET,
                 resolutionAdjustUrl(url), new ByteArrayRequest.Listener() {
             @Override
@@ -130,9 +128,9 @@ public class ImageDownloadingStore {
 
                     broadcastFileDownloaded(filename);
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "File Not Found ", e);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "IOException ", e);
                 }
             }
         },
@@ -144,7 +142,6 @@ public class ImageDownloadingStore {
                 });
 
         request.setRetryPolicy(new DefaultRetryPolicy(INITIAL_TIMEOUT_MS, MAX_NUM_RETRIES, BACKOFF_MULTIPLIER));
-        Log.d(TAG, "Requesting " + url + " -> " + filename);
         ACApplication.getInstance().getRequestQueue().add(request);
     }
 
@@ -183,10 +180,9 @@ public class ImageDownloadingStore {
     }
 
     private Bitmap parseBitmapFromBytes(byte[] data) {
-        Log.d(TAG, "Parsing Bitmap from " + data.length + "bytes ");
         BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
         Bitmap bitmap = null;
-        decodeOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+        decodeOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
         bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, decodeOptions);
         return bitmap;
     }

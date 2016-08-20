@@ -20,13 +20,11 @@ public class ACJobService extends JobService {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i(TAG, "Service created");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i(TAG, "Service destroyed");
     }
     @Override
     public boolean onStartJob(JobParameters params) {
@@ -37,7 +35,6 @@ public class ACJobService extends JobService {
     }
 
     private boolean onUpdateJobStart(JobParameters params) {
-        Log.d(TAG, "onUpdateJobStart");
         ACApplication.getInstance().updateUrls();
         return true;
     }
@@ -49,7 +46,6 @@ public class ACJobService extends JobService {
 
     /** Send job to the JobScheduler. */
     private static void scheduleJob(Context ctx, JobInfo t) {
-        Log.d(TAG, "Scheduling job");
         JobScheduler tm =
                 (JobScheduler) ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         tm.schedule(t);
