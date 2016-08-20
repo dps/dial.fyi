@@ -159,8 +159,8 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
             mClockView.setVisibility(View.VISIBLE);
             mClockView.setText(AMBIENT_DATE_FORMAT.format(new Date()));
         } else {
-            mContainerView.setBackground(null);
-            mTextView.setTextColor(getResources().getColor(android.R.color.black));
+            mContainerView.setBackgroundColor(getResources().getColor(R.color.wl_background));
+            mTextView.setTextColor(getResources().getColor(R.color.text_color));
             mClockView.setVisibility(View.GONE);
         }
     }

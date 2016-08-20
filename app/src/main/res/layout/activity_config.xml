@@ -7,13 +7,12 @@
     android:layout_height="match_parent"
     tools:context="io.singleton.wearface.ConfigActivity"
     tools:deviceIds="wear"
+    android:background="@color/wl_background"
     >
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_box="all">
-
-
 
     <TextView
         android:id="@+id/text"
@@ -22,6 +21,8 @@
         android:text="@string/registering"
         android:layout_centerHorizontal="true"
         android:textAlignment="center"
+        android:textColor="@color/text_color"
+        android:textAppearance="@android:style/TextAppearance.Medium"
         />
     <ImageButton
         android:id="@+id/buttonProceed"
