@@ -42,10 +42,8 @@ public class ImageDownloadingStore {
     public static final String ACTION_IMAGE_DOWNLOADED = "io.singleton.watchface.IMAGE_DOWNLOADED";
     public static final String ACTION_UPDATE_COMPLETE = "io.singleton.watchface.UPDATE_COMPLETE";
     public static final String THUMBNAILER_IMG_URL_PREFIX = "http://thumbor.us.davidsingleton.org/unsafe/400x400/";
-    public static final String GOOGLE_PHOTOS_URL_HOST = "lh3.googleusercontent.com";
     public static final String EXTRA_FILENAME_HASH = "hash";
     public static final String EXTRA_NUM_NEW_IMAGES = "new";
-    public static final int INITIAL_TIMEOUT_MS = 120000;
     public static final int MAX_NUM_RETRIES = 2;
     public static final float BACKOFF_MULTIPLIER = 1f;
     public static final String FILE_PREFIX = "ac-";
@@ -225,10 +223,6 @@ public class ImageDownloadingStore {
     }
 
     private String resolutionAdjustUrl(String url) {
-        // The thumbor thumbnailing service doesn't work with Google Photos URLs
-        if (url.contains(GOOGLE_PHOTOS_URL_HOST)) {
-            return url;
-        }
         return THUMBNAILER_IMG_URL_PREFIX + url;
     }
 
