@@ -12,9 +12,11 @@ public class ComplicationService extends ComplicationProviderService {
     public void onComplicationUpdate (int complicationId, int type,
                                       ComplicationManager manager) {
 
+        ImageDownloadingStore downloader = ImageDownloadingStore.getInstance(this);
+
         if (type == ComplicationData.TYPE_LARGE_IMAGE) {
             ComplicationData.Builder builder = new ComplicationData.Builder(type);
-            Bitmap bitmap = ImageDownloadingStore.getInstance(this).getNextBitmap();
+            Bitmap bitmap = downloader.getNextBitmap();
             Icon icon;
             if (bitmap != null) {
                 icon = Icon.createWithBitmap(bitmap);
@@ -25,5 +27,7 @@ public class ComplicationService extends ComplicationProviderService {
             builder.setLargeImage(icon);
             manager.updateComplicationData(complicationId, builder.build());
         }
+        // TODO: How long do I get to run in this job scheduler context?
+        downloader.updateUrlsIfStale();
     }
 }

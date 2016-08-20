@@ -41,13 +41,15 @@ public class ImageDownloadingStore {
     public static final String ACTION_UPDATE_START = "io.singleton.watchface.UPDATE_START";
     public static final String ACTION_IMAGE_DOWNLOADED = "io.singleton.watchface.IMAGE_DOWNLOADED";
     public static final String ACTION_UPDATE_COMPLETE = "io.singleton.watchface.UPDATE_COMPLETE";
-    public static final String THUMBNAILER_IMG_URL_PREFIX = "http://thumbor.us.davidsingleton.org/unsafe/400x400/";
+    public static final String THUMBNAILER_IMG_URL_PREFIX =
+            "http://thumbor.us.davidsingleton.org/unsafe/400x400/";
     public static final String EXTRA_FILENAME_HASH = "hash";
     public static final String EXTRA_NUM_NEW_IMAGES = "new";
     public static final int MAX_NUM_RETRIES = 2;
     public static final float BACKOFF_MULTIPLIER = 1f;
     public static final String FILE_PREFIX = "ac-";
     public static final int REGISTER_INITIAL_TIMEOUT_MS = 60000;
+    private static final long ONE_DAY_MILLIS = 24 * 60 * 60 * 1000;
 
     private final File mCacheDir;
     private Context mContext;
@@ -78,7 +80,7 @@ public class ImageDownloadingStore {
     private Response.ErrorListener mErrorListener = new Response.ErrorListener(){
         @Override
         public void onErrorResponse(VolleyError error) {
-            Log.d(TAG, "onErrorResponse " + error);
+            Log.e(TAG, "onErrorResponse " + error);
         }
     };
 
@@ -96,7 +98,7 @@ public class ImageDownloadingStore {
             json.put("id", mSettings.getLocalId());
             json.put("when", when);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error serializing request ", e);
         }
 
         JsonObjectRequest request = new JsonObjectRequest(
@@ -111,8 +113,7 @@ public class ImageDownloadingStore {
                             token = response.getString("token");
                             mSettings.setConfigToken(token);
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            // TODO: maybe retry
+                            Log.e(TAG, "Error parsing response", e);
                         }
 
                     }
@@ -121,6 +122,13 @@ public class ImageDownloadingStore {
         );
         request.setRetryPolicy(mRetryPolicy);
         mRequestQueue.add(request);
+    }
+
+    public void updateUrlsIfStale() {
+        long lastUpdate = mSettings.getLastUpdateTimeMs();
+        if (System.currentTimeMillis() - lastUpdate > ONE_DAY_MILLIS) {
+            updateUrls();
+        }
     }
 
     public void updateUrls() {
@@ -133,7 +141,7 @@ public class ImageDownloadingStore {
             body.put("token", mSettings.getConfigToken());
             body.put("when", when);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error serializing request ", e);
         }
 
         JSONObject json = body;
@@ -145,8 +153,6 @@ public class ImageDownloadingStore {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-
-                        Log.d(TAG, response.toString());
                         String urls = null;
                         try {
                             urls = response.getString("urls");
@@ -154,7 +160,6 @@ public class ImageDownloadingStore {
                             onUrlsUpdated(urls.split(","));
                         } catch (JSONException e) {
                             Log.e(TAG, "Could not parse response ", e);
-                            // TODO: maybe retry
                         }
 
                     }
@@ -174,23 +179,8 @@ public class ImageDownloadingStore {
         for (String url : urls) {
             mUrlHashes.put(urlHash(url), url);
         }
-
         deleteOldFiles();
         fetchMissingFiles();
-    }
-
-    private synchronized String urlHash(String url) {
-        try {
-            if (mDigester == null) {
-                mDigester = MessageDigest.getInstance("MD5");
-            }
-            mDigester.reset();
-            mDigester.update(url.getBytes());
-            return FILE_PREFIX + (new BigInteger(1, mDigester.digest())).toString(16);
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "Digest algorithm not found", e);
-        }
-        return null;
     }
 
     private void deleteOldFiles() {
@@ -222,10 +212,6 @@ public class ImageDownloadingStore {
         broadcastUpdateComplete(missing);
     }
 
-    private String resolutionAdjustUrl(String url) {
-        return THUMBNAILER_IMG_URL_PREFIX + url;
-    }
-
     private void downloadUrlToFile(String url, final String filename) {
         ByteArrayRequest request = new ByteArrayRequest(Request.Method.GET,
                 resolutionAdjustUrl(url), new ByteArrayRequest.Listener() {
@@ -236,7 +222,6 @@ public class ImageDownloadingStore {
                     FileOutputStream fos = new FileOutputStream(out);
                     fos.write(data);
                     fos.close();
-                    Log.d(TAG, "Wrote " + data.length + " bytes to " + filename);
 
                     broadcastFileDownloaded(filename);
                 } catch (FileNotFoundException e) {
@@ -292,6 +277,24 @@ public class ImageDownloadingStore {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    private synchronized String urlHash(String url) {
+        try {
+            if (mDigester == null) {
+                mDigester = MessageDigest.getInstance("MD5");
+            }
+            mDigester.reset();
+            mDigester.update(url.getBytes());
+            return FILE_PREFIX + (new BigInteger(1, mDigester.digest())).toString(16);
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "Digest algorithm not found", e);
+        }
+        return null;
+    }
+
+    private static String resolutionAdjustUrl(String url) {
+        return THUMBNAILER_IMG_URL_PREFIX + url;
     }
 
     private static Bitmap parseBitmapFromBytes(byte[] data) {

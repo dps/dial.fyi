@@ -17,6 +17,7 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
     public static final String PREF_URLS = "urls";
     public static final String PREF_INDEX = "index";
     public static final String PREF_SET_MAIN = "main";
+    private static final String PREF_LAST_UPDATE = "last_update";
 
 
     private static Settings mInstance;
@@ -32,6 +33,7 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
     private String mConfigToken;
     private String mImageUrlList;
     private Integer mIndexInCollection;
+    private Long mLastUpdateMillis;
 
     interface Listener {
         void onSettingsChanged();
@@ -65,7 +67,7 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
         mConfigToken = mPrefs.getString(PREF_TOKEN, null);
         mImageUrlList = mPrefs.getString(PREF_URLS, null);
         mIndexInCollection = mPrefs.getInt(PREF_INDEX, 0);
-
+        mLastUpdateMillis = mPrefs.getLong(PREF_LAST_UPDATE, 0);
 
         mPrefs.registerOnSharedPreferenceChangeListener(this);
     }
@@ -100,7 +102,8 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
                 .putString(PREF_URLS, mImageUrlList)
                 .putString(PREF_TOKEN, mConfigToken)
                 .putString(PREF_ID, mMyId)
-                .putInt(PREF_INDEX, mIndexInCollection).apply();
+                .putInt(PREF_INDEX, mIndexInCollection)
+                .putLong(PREF_LAST_UPDATE, mLastUpdateMillis).apply();
         notifyListeners();
     }
 
@@ -125,6 +128,10 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
         } else {
             return null;
         }
+    }
+
+    public long getLastUpdateTimeMs() {
+        return mLastUpdateMillis;
     }
 
 }
