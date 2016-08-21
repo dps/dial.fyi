@@ -75,11 +75,11 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
             @Override
             public void onClick(View v) {
 
-                IntentFilter intf = new IntentFilter();
-                intf.addAction(ImageDownloadingStore.ACTION_UPDATE_START);
-                intf.addAction(ImageDownloadingStore.ACTION_IMAGE_DOWNLOADED);
-                intf.addAction(ImageDownloadingStore.ACTION_UPDATE_COMPLETE);
-                mLocalBroadcastManager.registerReceiver(mReceiver, intf);
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(ImageDownloadingStore.ACTION_UPDATE_START);
+                filter.addAction(ImageDownloadingStore.ACTION_IMAGE_DOWNLOADED);
+                filter.addAction(ImageDownloadingStore.ACTION_UPDATE_COMPLETE);
+                mLocalBroadcastManager.registerReceiver(mReceiver, filter);
 
                 ImageDownloadingStore.getInstance(getApplicationContext()).updateUrls();
                 mProgressView.setVisibility(View.VISIBLE);

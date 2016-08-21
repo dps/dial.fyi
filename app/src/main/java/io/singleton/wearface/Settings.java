@@ -10,8 +10,6 @@ import java.util.List;
 
 public class Settings implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final String TAG = "ACApp";
-
     public static final String PREF_ID = "id";
     public static final String PREF_TOKEN = "token";
     public static final String PREF_URLS = "urls";
@@ -95,7 +93,6 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
     }
 
     public void setImageUrlList(String urlList) {
-        Log.d(TAG, "setImageUrlList " + urlList);
         mImageUrlList = urlList;
         writeToSharedPreferences();
     }
