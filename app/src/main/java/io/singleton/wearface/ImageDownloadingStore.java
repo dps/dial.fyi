@@ -77,7 +77,7 @@ public class ImageDownloadingStore {
         mSettings = Settings.getInstance(context);
     }
 
-    private Response.ErrorListener mErrorListener = new Response.ErrorListener(){
+    private Response.ErrorListener mErrorListener = new Response.ErrorListener() {
         @Override
         public void onErrorResponse(VolleyError error) {
             Log.e(TAG, "onErrorResponse " + error);
@@ -86,13 +86,11 @@ public class ImageDownloadingStore {
 
     private RetryPolicy mRetryPolicy =
             new DefaultRetryPolicy(REGISTER_INITIAL_TIMEOUT_MS,
-                                   MAX_NUM_RETRIES, BACKOFF_MULTIPLIER);
+                    MAX_NUM_RETRIES, BACKOFF_MULTIPLIER);
 
 
     public void register() {
-
         String when = Long.toString(System.currentTimeMillis());
-
         JSONObject json = new JSONObject();
         try {
             json.put("id", mSettings.getLocalId());
@@ -132,9 +130,7 @@ public class ImageDownloadingStore {
     }
 
     public void updateUrls() {
-
         String when = Long.toString(System.currentTimeMillis());
-
         JSONObject body = new JSONObject();
         try {
             body.put("id", mSettings.getLocalId());
@@ -191,7 +187,6 @@ public class ImageDownloadingStore {
             }
         })) {
             if (!mUrlHashes.containsKey(f.getName())) {
-                Log.d(TAG, "deleting " + f.getName());
                 f.delete();
             }
         }

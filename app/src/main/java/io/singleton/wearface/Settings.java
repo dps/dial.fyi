@@ -21,6 +21,7 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
 
 
     private static Settings mInstance;
+
     static synchronized Settings getInstance(Context ctx) {
         if (mInstance == null) {
             mInstance = new Settings(ctx);
@@ -40,9 +41,11 @@ public class Settings implements SharedPreferences.OnSharedPreferenceChangeListe
     }
 
     private List<Listener> mListeners = new ArrayList<Listener>();
+
     void addListener(Listener listener) {
         mListeners.add(listener);
     }
+
     void removeListener(Listener listener) {
         mListeners.remove(listener);
     }

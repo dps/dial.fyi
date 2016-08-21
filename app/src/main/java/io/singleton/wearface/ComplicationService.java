@@ -9,8 +9,8 @@ import android.support.wearable.complications.ComplicationProviderService;
 public class ComplicationService extends ComplicationProviderService {
 
     @Override
-    public void onComplicationUpdate (int complicationId, int type,
-                                      ComplicationManager manager) {
+    public void onComplicationUpdate(int complicationId, int type,
+                                     ComplicationManager manager) {
 
         ImageDownloadingStore downloader = ImageDownloadingStore.getInstance(this);
 
