@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
 import android.support.wearable.view.ProgressSpinner;
@@ -21,7 +22,6 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
 
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
             new SimpleDateFormat("HH:mm", Locale.US);
-    private static final String TAG = "ACConfig";
     public static final int IMAGE_DOWNLOAD_TIMEOUT_MS = 10000;
 
     private BoxInsetLayout mContainerView;
@@ -29,6 +29,7 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
     private TextView mClockView;
     private ProgressSpinner mProgressView;
     private Settings mSettings;
+    private LocalBroadcastManager mLocalBroadcastManager;
 
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
@@ -49,7 +50,7 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
 
                 if (mDownloadsRemaining == 0) {
                     if (mReceiver != null) {
-                        unregisterReceiver(mReceiver);
+                        mLocalBroadcastManager.unregisterReceiver(mReceiver);
                         mReceiver = null;
                     }
                     finish();
@@ -68,6 +69,7 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
         mTextView = (TextView) findViewById(R.id.text);
         mClockView = (TextView) findViewById(R.id.clock);
         mProgressView = (ProgressSpinner) findViewById(R.id.progress);
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         findViewById(R.id.buttonProceed).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,7 +79,7 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
                 intf.addAction(ImageDownloadingStore.ACTION_UPDATE_START);
                 intf.addAction(ImageDownloadingStore.ACTION_IMAGE_DOWNLOADED);
                 intf.addAction(ImageDownloadingStore.ACTION_UPDATE_COMPLETE);
-                registerReceiver(mReceiver, intf);
+                mLocalBroadcastManager.registerReceiver(mReceiver, intf);
 
                 ImageDownloadingStore.getInstance(getApplicationContext()).updateUrls();
                 mProgressView.setVisibility(View.VISIBLE);
@@ -96,7 +98,7 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
             @Override
             public void run() {
                 if (mReceiver != null) {
-                    unregisterReceiver(mReceiver);
+                    mLocalBroadcastManager.unregisterReceiver(mReceiver);
                     mReceiver = null;
                 }
                 finish();

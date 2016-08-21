@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -50,6 +51,7 @@ public class ImageDownloadingStore {
     public static final String FILE_PREFIX = "ac-";
     public static final int REGISTER_INITIAL_TIMEOUT_MS = 60000;
     private static final long ONE_DAY_MILLIS = 24 * 60 * 60 * 1000;
+    public static final int FILE_READ_BUFFER_SIZE_BYTES = 8096;
 
     private final File mCacheDir;
     private Context mContext;
@@ -67,14 +69,15 @@ public class ImageDownloadingStore {
     }
 
     private RequestQueue mRequestQueue;
-
     private Settings mSettings;
+    private LocalBroadcastManager mLocalBroadcastManager;
 
     public ImageDownloadingStore(Context context) {
         mContext = context;
         mCacheDir = mContext.getCacheDir();
         mRequestQueue = Volley.newRequestQueue(context);
         mSettings = Settings.getInstance(context);
+        mLocalBroadcastManager = LocalBroadcastManager.getInstance(context);
     }
 
     private Response.ErrorListener mErrorListener = new Response.ErrorListener() {
@@ -241,20 +244,20 @@ public class ImageDownloadingStore {
         Intent broadcast = new Intent();
         broadcast.setAction(ACTION_IMAGE_DOWNLOADED);
         broadcast.putExtra(EXTRA_FILENAME_HASH, filename);
-        mContext.sendBroadcast(broadcast);
+        mLocalBroadcastManager.sendBroadcast(broadcast);
     }
 
     private void broadcastUpdateStarted() {
         Intent broadcast = new Intent();
         broadcast.setAction(ACTION_UPDATE_START);
-        mContext.sendBroadcast(broadcast);
+        mLocalBroadcastManager.sendBroadcast(broadcast);
     }
 
     private void broadcastUpdateComplete(int numNewImages) {
         Intent broadcast = new Intent();
         broadcast.setAction(ACTION_UPDATE_COMPLETE);
         broadcast.putExtra(EXTRA_NUM_NEW_IMAGES, numNewImages);
-        mContext.sendBroadcast(broadcast);
+        mLocalBroadcastManager.sendBroadcast(broadcast);
     }
 
     Bitmap getBitmapIfCached(String url) {
@@ -303,7 +306,7 @@ public class ImageDownloadingStore {
     private static byte[] toByteArray(InputStream is) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int read;
-        byte[] data = new byte[8096];
+        byte[] data = new byte[FILE_READ_BUFFER_SIZE_BYTES];
         while ((read = is.read(data, 0, data.length)) >= 0) {
             buffer.write(data, 0, read);
         }
