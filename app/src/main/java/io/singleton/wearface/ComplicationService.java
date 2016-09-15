@@ -26,6 +26,8 @@ public class ComplicationService extends ComplicationProviderService {
             }
             builder.setLargeImage(icon);
             manager.updateComplicationData(complicationId, builder.build());
+        } else {
+            throw new IllegalStateException("Unexpected complication type: " + type);
         }
         // TODO: How long do I get to run in this job scheduler context?
         downloader.updateUrlsIfStale();
