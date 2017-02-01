@@ -12,7 +12,8 @@
         android:icon="@mipmap/ic_launcher"
         android:supportsRtl="true" android:theme="@style/AppTheme">
         <uses-library android:name="com.google.android.wearable" android:required="false" />
-
+        <meta-data android:name="com.google.android.wearable.standalone" android:value="true" />
+        
         <service android:name=".ComplicationService"
                  android:label="@string/provider_name"
                  android:icon="@drawable/ic_provider_icon_white_24dp">
