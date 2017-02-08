@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
@@ -12,6 +13,8 @@ import android.support.wearable.view.BoxInsetLayout;
 import android.support.wearable.view.ProgressSpinner;
 import android.view.View;
 import android.widget.TextView;
+
+import com.google.android.wearable.intent.RemoteIntent;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -128,9 +131,16 @@ public class ConfigActivity extends WearableActivity implements Settings.Listene
             String confUrl = Constants.USER_FRIENDLY_BASE_URL +
                     String.format(Constants.USER_CONFIG_PATH, mSettings.getConfigToken());
             mTextView.setText(getString(R.string.config_instructions, confUrl));
+            openConfUrlOnPhone("http://" + confUrl);
         }
     }
 
+    private void openConfUrlOnPhone(String confUrl) {
+        Intent intent = new Intent(Intent.ACTION_VIEW)
+                .addCategory(Intent.CATEGORY_BROWSABLE)
+                .setData(Uri.parse(confUrl));
+        RemoteIntent.startRemoteActivity(this, intent, null);
+    }
 
     @Override
     public void onEnterAmbient(Bundle ambientDetails) {
